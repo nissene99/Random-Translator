@@ -1,4 +1,4 @@
-# create GUI for the program with tkinter
+# Hier werden alle Module importiert
 import json
 import time
 import tkinter as tk
@@ -36,6 +36,7 @@ def seconds2time(seconds):
 	return text
 
 
+# Das ist die Hauptklasse, die das Fenster erstellt
 class GUI(tk.Tk):
 	def __init__(self):
 		super().__init__()
@@ -77,17 +78,16 @@ class GUI(tk.Tk):
 		self.geometry("500x675")
 		self.resizable(True, True)
 		self.font = ("Arial", 12)
-		# set the font for the whole GUI
 		self.option_add("*Font", self.font)
 		self.create_widgets()
 		self.duration_per_language = 2.34121889
-		# check if dark mode is enabled
+		# Prüft, ob das System ein Darkmode verwendet
 		if self.winfo_rgb(self.cget("bg"))[0] < 100:
 			self.color = "white"
 		else:
 			self.color = "black"
 
-		# set the theme for the GUI
+		# Ändert die Farbe des Fensters, wenn das System ein Darkmode verwendet
 		if self.color == "black":
 			self.icon="dark.ico"
 			self.config(bg="#333333")
@@ -117,7 +117,7 @@ class GUI(tk.Tk):
 			# add gradient to the buttons
 			self.random_translate_button.bind("<Enter>", lambda e: randomcolor(self.random_translate_button))
 			self.random_translate_button.bind("<Leave>", lambda e: self.random_translate_button.config(bg="#333333"))
-		else:
+		else: # Ansonsten wird die Farbe des Fensters auf weiß gesetzt
 			self.icon = "light.ico"
 			self.config(bg="white")
 			self.input_label.config(bg="white", fg="black")
@@ -148,6 +148,8 @@ class GUI(tk.Tk):
 			self.random_translate_button.bind("<Leave>", lambda e: self.random_translate_button.config(bg="white"))
 		self.iconbitmap(self.icon)
 
+	# Hier werden alle Widgets erstellt, die im Fenster angezeigt werden sollen
+	# Dazu gehören Knöpfe, Überschriften, Eingabefelder, Ausgabefelder, Scrollbars, usw.
 	def create_widgets(self):
 		# create input field with scrollbar and output field with scrollbar
 		self.input_label = tk.Label(self, text="Zu übersetzender Text")
@@ -230,6 +232,12 @@ class GUI(tk.Tk):
 		self.help_button = tk.Button(self.button_frame, text="Hilfe", command=self.help)
 		self.help_button.grid(row=5, column=0, sticky="en")
 
+	# Falls der Nutzer eine Zahl eingibt, die die Anzahl der verfügbaren Sprachen überschreitet,
+	# wird die Zahl auf die Anzahl der verfügbaren Sprachen gesetzt
+	
+	# Falls der Nutzer eine Zahl kleiner als 1 eingibt, wird die Zahl auf 1 gesetzt
+	
+	# Falls der Nutzer keine Zahl eingibt, wird die Zahl auf 1 gesetzt
 	def checknumber(self):
 		if self.number_field.get() == "" or self.number_field.get().isdigit() == False:
 			self.number_field.delete(0, "end")
@@ -242,6 +250,7 @@ class GUI(tk.Tk):
 			self.number_field.insert(0, f"{len(SPRACHEN.keys()) + 1}")
 		self.update()
 
+	# Hier wird die GUI aktualisiert
 	def update(self) -> None:
 		"""Update the gui"""
 		with open("stats.json") as f:
@@ -258,6 +267,8 @@ class GUI(tk.Tk):
 		)
 		super().update()
 
+	# Wenn der Nutzer auf das Ausgabefeld klickt, wird der Text in die Zwischenablage kopiert
+	# und eine Nachricht angezeigt
 	def copy(self):
 		# copy the text from the output field to the clipboard
 		self.clipboard_clear()
@@ -281,6 +292,7 @@ class GUI(tk.Tk):
 			time.sleep(0.05)
 		message.destroy()
 
+	# Während der Übersetzung wird der Fortschritt angezeigt
 	def loading(self, text=None):
 		# insert text into the output field
 		if text is None:
@@ -289,6 +301,8 @@ class GUI(tk.Tk):
 			self.output_field.insert("1.0", text)
 		self.update()
 
+	# Diese Funktion wird aufgerufen, wenn der Nutzer auf den Übersetzen-Button klickt
+	# Die Übersetzungsreihenfolge wird wie folgt ausgeführt:
 	# Deutsch -> Latein -> Koreanisch -> Russisch -> Somali -> Zulu -> Georgisch -> Kroatisch -> Deutsch
 	def translate(self):
 		difference = 0
@@ -317,6 +331,8 @@ class GUI(tk.Tk):
 		self.output_field.insert("1.0", translated_text)
 		self.update()
 
+	# Wenn der Nutzer auf den "Zufällig übersetzen"-Button klickt, werden so viele Sprachen ausgewählt,
+	# wie in der Zahleneingabe steht
 	def random_translate(self):
 		# get the text from the input field
 		text = self.input_field.get("1.0", "end")
@@ -343,6 +359,7 @@ class GUI(tk.Tk):
 		diff = time.time() - t0
 		self.real_duration = diff
 		stats = None
+		# Hier wird die Dauer der Übersetzung in die stats.json geschrieben
 		with open("stats.json") as file:
 			stats = json.loads(file.read())
 			if str(anzahl) not in stats.keys():
@@ -360,6 +377,7 @@ class GUI(tk.Tk):
 		self.output_field.insert("1.0", translated_text)
 		self.update()
 
+	# Hier wird ein neues Fenster geöffnet, in dem ein paar Informationen über das Programm stehen
 	def help(self):
 		# create popup message and destroy it after 1 second
 		message = tk.Toplevel(self)
@@ -388,7 +406,7 @@ class GUI(tk.Tk):
 		# move the window to the mouse position
 		message.geometry(f"+{self.winfo_pointerx() // 2}+{self.winfo_pointery() // 2}")
 
-
+# Hier beginnt das Programm
 if __name__ == "__main__":
 	gui = GUI()
 	gui.mainloop()

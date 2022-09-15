@@ -1,17 +1,19 @@
+# Hier werden alle Module importiert
+
 from datetime import datetime
 from random import random
 import translators as ts
 import json
 
-
-SPRACHEN = json.load(open('sprachen.json', encoding='utf-8'))
+SPRACHEN = json.load(open('sprachen.json', encoding='utf-8'))  # Sprachen aus JSON-Datei laden
 DEBUG = False
 
 
+# Hier wird die Übersetzung durchgeführt, indem die Google-API aufgerufen wird
 def translate(text, to_lang, from_lang='auto'):
 	return ts.google(text, to_language=to_lang, from_language=from_lang)
 
-
+# Das selbe wie oben, nur mit mehreren Sprachen
 def batch_translate(text, sprachen=SPRACHEN.keys(), output=None):
 	"""
 	Übersetzt den Text in die angegebenen Sprachen.
@@ -40,6 +42,7 @@ def batch_translate(text, sprachen=SPRACHEN.keys(), output=None):
 	return text
 
 
+# Hier werden die zufälligen Sprachen ausgewählt
 def random_translate(text, anzahl, output=None):
 	# wähle zufällig anzahl Sprachen aus
 	sprachen = []
@@ -48,4 +51,3 @@ def random_translate(text, anzahl, output=None):
 		if sprache not in sprachen:
 			sprachen.append(sprache)
 	return batch_translate(text, sprachen, output)
-
