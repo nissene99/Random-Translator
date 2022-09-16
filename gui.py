@@ -2,11 +2,10 @@
 import json
 import time
 import tkinter as tk
+from tkinter import ttk
 import random
 
 from translate import translate as tr, random_translate as rtr, SPRACHEN
-
-
 
 
 def randomcolor(button):
@@ -40,6 +39,7 @@ def seconds2time(seconds):
 class GUI(tk.Tk):
 	def __init__(self):
 		super().__init__()
+		self.invisible_line = None
 		self.HELP_TEXT = f"""
 		Übersetzer
 		Dieses Programm übersetzt einen Text in eine andere Sprache mithilfe des Google Übersetzers.
@@ -75,12 +75,11 @@ class GUI(tk.Tk):
 		self.input_label = None
 		self.random_translate_button = None
 		self.title("CPP Google Übersetzer")
-		self.geometry("500x675")
-		self.resizable(True, True)
+		self.geometry("700x1200")
+		self.resizable(True, False)
 		self.font = ("Arial", 12)
 		self.option_add("*Font", self.font)
 		self.create_widgets()
-		self.duration_per_language = 2.34121889
 		# Prüft, ob das System ein Darkmode verwendet
 		if self.winfo_rgb(self.cget("bg"))[0] < 100:
 			self.color = "white"
@@ -89,7 +88,7 @@ class GUI(tk.Tk):
 
 		# Ändert die Farbe des Fensters, wenn das System ein Darkmode verwendet
 		if self.color == "black":
-			self.icon="dark.ico"
+			self.icon = "dark.ico"
 			self.config(bg="#333333")
 			self.input_label.config(bg="#333333", fg="white")
 			self.output_label.config(bg="#333333", fg="white")
@@ -117,7 +116,7 @@ class GUI(tk.Tk):
 			# add gradient to the buttons
 			self.random_translate_button.bind("<Enter>", lambda e: randomcolor(self.random_translate_button))
 			self.random_translate_button.bind("<Leave>", lambda e: self.random_translate_button.config(bg="#333333"))
-		else: # Ansonsten wird die Farbe des Fensters auf weiß gesetzt
+		else:  # Ansonsten wird die Farbe des Fensters auf weiß gesetzt
 			self.icon = "light.ico"
 			self.config(bg="white")
 			self.input_label.config(bg="white", fg="black")
@@ -147,6 +146,7 @@ class GUI(tk.Tk):
 			self.random_translate_button.bind("<Enter>", lambda e: randomcolor(self.random_translate_button))
 			self.random_translate_button.bind("<Leave>", lambda e: self.random_translate_button.config(bg="white"))
 		self.iconbitmap(self.icon)
+		
 
 	# Hier werden alle Widgets erstellt, die im Fenster angezeigt werden sollen
 	# Dazu gehören Knöpfe, Überschriften, Eingabefelder, Ausgabefelder, Scrollbars, usw.
@@ -154,21 +154,27 @@ class GUI(tk.Tk):
 		# create input field with scrollbar and output field with scrollbar
 		self.input_label = tk.Label(self, text="Zu übersetzender Text")
 		self.input_label.grid(row=0, column=0, sticky="w")
-		self.input_field = tk.Text(self, width=50, height=10)
+		self.input_field = tk.Text(self, width=50, height=25)
 		self.input_field.grid(row=1, column=0, padx=10, pady=10)
+		# set width of the input field to the window width
+		self.input_field.bind("<Configure>", lambda e: self.input_field.config(width=self.winfo_width() // 10))
+		
 		self.input_scrollbar = tk.Scrollbar(self, command=self.input_field.yview)
-		self.input_scrollbar.grid(row=1, column=1, sticky="ns")
+		self.input_scrollbar.grid(row=1, column=0, sticky="nse", rowspan=1, padx=5)
 		self.input_field["yscrollcommand"] = self.input_scrollbar.set
+		
 
 		# if the input field is changed, clear the output field
 		self.input_field.bind("<Key>", lambda e: self.output_field.delete("1.0", "end"))
 
 		self.output_label = tk.Label(self, text="Übersetzter Text")
 		self.output_label.grid(row=2, column=0, sticky="w")
-		self.output_field = tk.Text(self, width=50, height=10)
+		self.output_field = tk.Text(self, width=50, height=25)
 		self.output_field.grid(row=3, column=0, padx=10, pady=10)
+		# set width of the output field to the window width
+		self.output_field.bind("<Configure>", lambda e: self.output_field.config(width=self.winfo_width() // 10))
 		self.output_scrollbar = tk.Scrollbar(self, command=self.output_field.yview)
-		self.output_scrollbar.grid(row=3, column=1, sticky="ns")
+		self.output_scrollbar.grid(row=3, column=0, sticky="nse", rowspan=1, padx=5)
 		self.output_field["yscrollcommand"] = self.output_scrollbar.set
 		# prevent the user from writing in the output field
 		self.output_field.bind("<Key>", lambda e: "break")
@@ -177,20 +183,22 @@ class GUI(tk.Tk):
 
 		# if user clicks on the output field copy the text to the clipboard and show a message
 		self.output_field.bind("<Button-1>", lambda e: self.copy())
+		
 
 		# create grid for buttons
 		self.button_frame = tk.Frame(self)
-		self.button_frame.grid(row=4, column=0, padx=10, pady=10)
-
+		self.button_frame.grid(row=5, column=0, padx=10, pady=10, sticky="s")
+		
+		
 		# create button to translate the text
 		self.translate_button = tk.Button(self.button_frame, text="Übersetzen", command=self.translate)
-		self.translate_button.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+		self.translate_button.grid(row=1, column=0, padx=10, pady=10, sticky="w")
 
 		# draw a horizontal line
 		self.line = tk.Canvas(
 				self.button_frame, width=500, height=0.5, bg="white", highlightthickness=1
 		)
-		self.line.grid(row=1, column=0, padx=0, pady=0)
+		self.line.grid(row=2, column=0, padx=0, pady=0)
 
 		# change width of line to fit the window
 		self.bind("<Configure>", lambda e: self.line.config(width=self.winfo_width() - 20))
@@ -199,23 +207,25 @@ class GUI(tk.Tk):
 		self.random_translate_button = tk.Button(
 				self.button_frame, text="Zufällig übersetzen", command=self.random_translate
 		)
-		self.random_translate_button.grid(row=2, column=0, padx=10, pady=10, sticky="w")
-
-		# create input field for number of languages to translate to
-		self.number_label = tk.Label(self.button_frame, text="Anzahl Iterationen (Wenn zufällig übersetzt wird)")
-		self.number_label.grid(row=4, column=0, sticky="wn")
-		# create number field
-		self.number_field = tk.Entry(self.button_frame, width=5)
-		self.number_field.grid(row=4, column=0, sticky="en")
-		self.number_field.insert(0, "5")
-		self.number_field.bind("<Leave>", lambda e: self.checknumber())
+		self.random_translate_button.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
 		self.real_duration_label = tk.Label(
 				self.button_frame, text="Tatsächliche Übersetzungszeit: {}".format(
 						seconds2time(self.real_duration)
 				)
 		)
-		self.real_duration_label.grid(row=3, column=0, sticky="w")
+		self.real_duration_label.grid(row=4, column=0, sticky="w")
+
+		# create input field for number of languages to translate to
+		self.number_label = tk.Label(self.button_frame, text="Anzahl Iterationen (Wenn zufällig übersetzt wird)")
+		self.number_label.grid(row=5, column=0, sticky="wn")
+		# create number field
+		self.number_field = tk.Entry(self.button_frame, width=5)
+		self.number_field.grid(row=5, column=0, sticky="en")
+		self.number_field.insert(0, "5")
+		self.number_field.bind("<Leave>", lambda e: self.checknumber())
+
+
 
 		with open("stats.json") as f:
 			stats = json.loads(f.read())
@@ -230,13 +240,13 @@ class GUI(tk.Tk):
 		self.duration_field.grid(row=3, column=0, sticky="e")
 
 		self.help_button = tk.Button(self.button_frame, text="Hilfe", command=self.help)
-		self.help_button.grid(row=5, column=0, sticky="en")
-
+		self.help_button.grid(row=6, column=0, sticky="en")
+	
 	# Falls der Nutzer eine Zahl eingibt, die die Anzahl der verfügbaren Sprachen überschreitet,
 	# wird die Zahl auf die Anzahl der verfügbaren Sprachen gesetzt
-	
+
 	# Falls der Nutzer eine Zahl kleiner als 1 eingibt, wird die Zahl auf 1 gesetzt
-	
+
 	# Falls der Nutzer keine Zahl eingibt, wird die Zahl auf 1 gesetzt
 	def checknumber(self):
 		if self.number_field.get() == "" or self.number_field.get().isdigit() == False:
@@ -405,6 +415,7 @@ class GUI(tk.Tk):
 			counter += 1
 		# move the window to the mouse position
 		message.geometry(f"+{self.winfo_pointerx() // 2}+{self.winfo_pointery() // 2}")
+
 
 # Hier beginnt das Programm
 if __name__ == "__main__":
