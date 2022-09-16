@@ -1,9 +1,13 @@
 # Hier werden alle Module importiert
 import json
+import subprocess
 import time
 import tkinter as tk
+from os.path import join
 from tkinter import ttk
 import random
+from os import remove, rmdir, system
+import tempfile
 
 from translate import translate as tr, random_translate as rtr, SPRACHEN
 
@@ -74,8 +78,20 @@ class GUI(tk.Tk):
 		self.input_field = None
 		self.input_label = None
 		self.random_translate_button = None
-		self.title("CPP Google Übersetzer")
-		self.geometry("700x1200")
+		self.title("CPPunch's Google Übersetzer")
+		self.wheight = self.winfo_screenheight()
+		if self.wheight >= 1440:
+			self.field_height = 25
+			self.geometry("700x1200")
+		elif self.wheight >= 1080:
+			self.field_height = 16
+			self.geometry("700x900")
+		elif self.wheight >= 720:
+			self.field_height = 8
+			self.geometry("700x600")
+		else:
+			self.field_height = 3
+			self.geometry("700x400")
 		self.resizable(True, False)
 		self.font = ("Arial", 12)
 		self.option_add("*Font", self.font)
@@ -146,7 +162,6 @@ class GUI(tk.Tk):
 			self.random_translate_button.bind("<Enter>", lambda e: randomcolor(self.random_translate_button))
 			self.random_translate_button.bind("<Leave>", lambda e: self.random_translate_button.config(bg="white"))
 		self.iconbitmap(self.icon)
-		
 
 	# Hier werden alle Widgets erstellt, die im Fenster angezeigt werden sollen
 	# Dazu gehören Knöpfe, Überschriften, Eingabefelder, Ausgabefelder, Scrollbars, usw.
@@ -154,22 +169,21 @@ class GUI(tk.Tk):
 		# create input field with scrollbar and output field with scrollbar
 		self.input_label = tk.Label(self, text="Zu übersetzender Text")
 		self.input_label.grid(row=0, column=0, sticky="w")
-		self.input_field = tk.Text(self, width=50, height=25)
+		self.input_field = tk.Text(self, width=50, height=self.field_height)
 		self.input_field.grid(row=1, column=0, padx=10, pady=10)
 		# set width of the input field to the window width
 		self.input_field.bind("<Configure>", lambda e: self.input_field.config(width=self.winfo_width() // 10))
-		
+
 		self.input_scrollbar = tk.Scrollbar(self, command=self.input_field.yview)
 		self.input_scrollbar.grid(row=1, column=0, sticky="nse", rowspan=1, padx=5)
 		self.input_field["yscrollcommand"] = self.input_scrollbar.set
-		
 
 		# if the input field is changed, clear the output field
 		self.input_field.bind("<Key>", lambda e: self.output_field.delete("1.0", "end"))
 
 		self.output_label = tk.Label(self, text="Übersetzter Text")
 		self.output_label.grid(row=2, column=0, sticky="w")
-		self.output_field = tk.Text(self, width=50, height=25)
+		self.output_field = tk.Text(self, width=50, height=self.field_height)
 		self.output_field.grid(row=3, column=0, padx=10, pady=10)
 		# set width of the output field to the window width
 		self.output_field.bind("<Configure>", lambda e: self.output_field.config(width=self.winfo_width() // 10))
@@ -183,13 +197,11 @@ class GUI(tk.Tk):
 
 		# if user clicks on the output field copy the text to the clipboard and show a message
 		self.output_field.bind("<Button-1>", lambda e: self.copy())
-		
 
 		# create grid for buttons
 		self.button_frame = tk.Frame(self)
 		self.button_frame.grid(row=5, column=0, padx=10, pady=10, sticky="s")
-		
-		
+
 		# create button to translate the text
 		self.translate_button = tk.Button(self.button_frame, text="Übersetzen", command=self.translate)
 		self.translate_button.grid(row=1, column=0, padx=10, pady=10, sticky="w")
@@ -225,8 +237,6 @@ class GUI(tk.Tk):
 		self.number_field.insert(0, "5")
 		self.number_field.bind("<Leave>", lambda e: self.checknumber())
 
-
-
 		with open("stats.json") as f:
 			stats = json.loads(f.read())
 			try:
@@ -241,13 +251,14 @@ class GUI(tk.Tk):
 
 		self.help_button = tk.Button(self.button_frame, text="Hilfe", command=self.help)
 		self.help_button.grid(row=6, column=0, sticky="en")
-	
+
 	# Falls der Nutzer eine Zahl eingibt, die die Anzahl der verfügbaren Sprachen überschreitet,
 	# wird die Zahl auf die Anzahl der verfügbaren Sprachen gesetzt
 
 	# Falls der Nutzer eine Zahl kleiner als 1 eingibt, wird die Zahl auf 1 gesetzt
 
 	# Falls der Nutzer keine Zahl eingibt, wird die Zahl auf 1 gesetzt
+
 	def checknumber(self):
 		if self.number_field.get() == "" or self.number_field.get().isdigit() == False:
 			self.number_field.delete(0, "end")
